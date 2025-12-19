@@ -1,0 +1,83 @@
+Evernote is getting too expensive to sustain a membership.  I would like to try to create my own web-based note taking application similar to Evernote and if I like it, release it to others for a fee.  
+
+I would like it build in Ruby/Ruby on Rails with a Postgres database (I already have Ruby, Ruby on Rails and Postgres installed) and call it ZappyNotes.  
+
+Ruby version: 3.3.8
+Rails version: 8.1.1
+Postgres version 18
+
+The application should use Tailwind as the CSS framework and will eventually be deployed to Heroku
+
+Create a landing page with the text placeholders for marketing, and add a section describing the tiers.  
+
+On the landing/hero page, include three plans: Free, Plus ($1.99/month), and Pro for $4.99/month.  
+
+The Free plan has 3 notebook/10 notes per notebook and 100MB per note limits (based on byte size of the Markdown content).  The Plus plan has 10 notebook/30 notes per notebook/500MB limit, and the Pro plan has not limits.  If the user selects one of the paid plans, it should pop up the Stripe modal to susbribe them. There should be a way to track subscriptions for users. Paid and Free.  Users can subscribe and are either active subscribers or free subscribers.  In the event they downgrade their account, they need to select which Notebooks and Notes they want to make available but we can work on this for version 2  
+
+Set up full Stripe integration with test mode keys and webhook handling
+
+The application's main screen should be a vertical navigation bar on the side displaying Notebooks (with default, non-editable icons...sample shown below), and notes contained inside it.  
+
+Users should have the ability to create button at the top which says "Create Note" which displays when a Notebooks is selected.  They can edit the note by clicking on a note, and can delete both notes and notebooks by clicking on an elipsis (...) to the right of the notes or notebooks. The elipsis should be a dropdown menu that says, "Rename", "Change Color" and "Delete" (however the change color is only available on Notebooks, not notes.  Renaming the note, opens a flowbite component asking for the new name, and upon selecting delete, confirms the delete and deletes the note/notebook.  
+
+
+The right portion of the screen should contain the note currently selected.  When the user selects a note in the sidebar, the note automatically opens in edit mode on the right.  
+
+The note section should have a WYSIWYG editor that supports Markdown (or the preferred GitHub Flavored Markdown).  The application should use the kramdown gem to support this feature, or anything within the Rails domain (Hotwire, Stimulus).  The preview and notetaking should be server-side Rails.  
+
+
+Prior to the main screen, users should be asked to authenticate in order to see their information.  This is to be done in rails authentication (rails g authentication).  Users should only be able to see their own notes.  
+
+The notes will all be text based.  No images.  This application is a simple note editor.
+
+
+Create this application and prompt me for more instructions if needed prior to writing code.  
+
+Notebook Management:
+
+-Users will be able to create notebooks with custom names
+-The "Create Notebook" button should be located above the notebooks at the top of the sidebar
+-Users should start with a default notebook ("My Notebook") with a default note open in the editor called "First Note"
+
+
+Note Editor Experience:
+The editor should be a Single view that saves and re-renders server-side on blur/save button
+
+Storage Limits:
+The 100MB/500MB limits are total for all notes.  The sum of all notes, because Im sure thats what Heroku will charge for
+
+User Experience:
+Prior to deleting notebooks, there should be a Flowbite modal asking for confirmation prior to deleting notes/notebooks
+When limits are reached (e.g., Free user tries to create 4th notebook), it should prompt for an upgrade
+
+First-Time User Flow: 
+When a user signs up they should see a default notebook called "My Notebook" (which they can rename), and a default note note called "First Note" (which they can also rename)
+Also auto-create a "Getting Started" notebook with a welcome note for first time users. 
+
+Set up webhook handling for these events:
+checkout.session.completed (new subscription)
+customer.subscription.updated (plan changes)
+customer.subscription.deleted (cancellations)
+invoice.payment_failed (failed payments)
+
+I would like automatic saves on blur and periodically (every min, or whatever the standard is)
+
+For clarity, I prefer a live editor that shows formatted text as you type.
+
+For Stripe I do not have my Stripe keys yet, so create the '.env.example' file with placeholders
+
+When a user first logs in they should see the last note they were editing
+
+When a user creates a note, it should immediately open in an editor
+
+When a user deletes the current note, it should switch to an empty state with no notes selected 
+
+I prefer Flowbite integrated with Importmaps
+
+Icons to be used for Notebooks.  All notebooks should use this icon.  However, in the elipsis dropdown, you can change the color of the icon.  We want to offer 5 colors Red, Green, Blue, Yellow, and Orange.
+<svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 16 20">
+    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 17V2a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H3a2 2 0 0 0-2 2Zm0 0a2 2 0 0 0 2 2h12M5 15V1m8 18v-4"></path>
+</svg>
+
+Create a comprehensive set of unit tests, integration and system tests using RSpec, that integrates well with GitHub Actions 
+

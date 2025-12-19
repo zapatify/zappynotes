@@ -1,0 +1,556 @@
+<div class="h-screen flex bg-gray-50">
+  <!-- Sidebar -->
+  <aside class="w-80 bg-white border-r border-gray-200 flex flex-col">
+    <!-- Header -->
+    <div class="p-4 border-b border-gray-200">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center space-x-2">
+          <%= link_to root_path, class: "flex items-center space-x-2" do %>
+            <%= image_tag "zappynoteslogo.png", alt: "ZappyNotes", class: "h-10" %>
+          <% end %>
+        </div>
+        
+        <!-- User Dropdown -->
+        <div class="relative">
+          <button type="button" id="user-menu-button" data-dropdown-toggle="user-dropdown" class="text-gray-500 hover:text-gray-700">
+            <svg class="w-7 h-7" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M10 0a10 10 0 1 0 10 10A10.011 10.011 0 0 0 10 0Zm0 5a3 3 0 1 1 0 6 3 3 0 0 1 0-6Zm0 13a8.949 8.949 0 0 1-4.951-1.488A3.987 3.987 0 0 1 9 13h2a3.987 3.987 0 0 1 3.951 3.512A8.949 8.949 0 0 1 10 18Z"/>
+            </svg>
+          </button>
+          
+          <!-- Dropdown Menu -->
+          <div id="user-dropdown" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44">
+            <ul class="py-2 text-sm text-gray-700">
+              <li>
+                <%= link_to "Account Settings", account_path, class: "block px-4 py-2 hover:bg-gray-100" %>
+              </li>
+              <li>
+                <%= link_to "Sign Out", sign_out_path, data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to sign out?" }, class: "block px-4 py-2 hover:bg-gray-100 text-red-600" %>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      
+      <button type="button" data-modal-target="create-notebook-modal" data-modal-toggle="create-notebook-modal" class="w-full !bg-orange-600 text-white py-2 px-4 rounded-lg font-medium hover:!bg-orange-700 transition flex items-center justify-center space-x-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        <span>Create Notebook</span>
+      </button>
+    </div>
+
+    <!-- Notebooks and Notes List -->
+    <div class="flex-1 overflow-y-auto p-4" id="notebooks-list">
+      <% @notebooks.each do |notebook| %>
+        <div class="mb-0" data-notebook-id="<%= notebook.id %>">
+          <div class="flex items-center justify-between group py-2 px-3 rounded-lg hover:bg-gray-50 cursor-pointer" onclick="toggleNotebook(<%= notebook.id %>)">
+            <div class="flex items-center space-x-2">
+              <svg class="w-5 h-5" style="color: <%= notebook.hex_color %>" fill="none" stroke="currentColor" viewBox="0 0 16 20">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 17V2a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H3a2 2 0 0 0-2 2Zm0 0a2 2 0 0 0 2 2h12M5 15V1m8 18v-4"></path>
+              </svg>
+              <span class="font-medium text-gray-900"><%= notebook.name %></span>
+            </div>
+            
+            <button onclick="event.stopPropagation()" id="notebook-menu-<%= notebook.id %>" data-dropdown-toggle="notebook-dropdown-<%= notebook.id %>" class="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-gray-700 p-1" type="button">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+              </svg>
+            </button>
+            
+            <!-- Notebook Dropdown Menu -->
+            <div id="notebook-dropdown-<%= notebook.id %>" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44">
+              <ul class="py-2 text-sm text-gray-700">
+                <li>
+                  <button onclick="openRenameModal('notebook', <%= notebook.id %>, '<%= j(notebook.name) %>')" class="block w-full text-left px-4 py-2 hover:bg-gray-100">Rename</button>
+                </li>
+                <li>
+                  <button onclick="openColorModal(<%= notebook.id %>)" class="block w-full text-left px-4 py-2 hover:bg-gray-100">Change Color</button>
+                </li>
+                <li>
+                  <button onclick="openDeleteModal('notebook', <%= notebook.id %>, '<%= j(notebook.name) %>')" class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600">Delete</button>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Notes in this notebook -->
+          <div id="notes-<%= notebook.id %>" class="ml-7 mt-2 space-y-1" style="display: <%= @selected_note&.notebook_id == notebook.id ? 'block' : 'none' %>">
+            <button onclick="createNote(<%= notebook.id %>)" class="w-full text-left text-sm text-orange-600 hover:text-orange-700 py-1 px-2 rounded flex items-center space-x-1">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              <span>Create Note</span>
+            </button>
+            
+            <% notebook.notes.each do |note| %>
+              <div class="flex items-center justify-between group py-1.5 px-2 rounded hover:bg-gray-50 <%= @selected_note&.id == note.id ? 'bg-orange-50' : '' %>" data-note-id="<%= note.id %>">
+                <button onclick="loadNote(<%= note.id %>)" class="flex-1 text-left text-sm text-gray-700 hover:text-gray-900 truncate">
+                  <%= note.title %>
+                </button>
+                
+                <button onclick="event.stopPropagation()" id="note-menu-<%= note.id %>" data-dropdown-toggle="note-dropdown-<%= note.id %>" class="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-gray-700 p-1" type="button">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                  </svg>
+                </button>
+                
+                <!-- Note Dropdown Menu -->
+                <div id="note-dropdown-<%= note.id %>" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44">
+                  <ul class="py-2 text-sm text-gray-700">
+                    <li>
+                      <button onclick="openRenameModal('note', <%= note.id %>, '<%= j(note.title) %>')" class="block w-full text-left px-4 py-2 hover:bg-gray-100">Rename</button>
+                    </li>
+                    <li>
+                      <button onclick="openDeleteModal('note', <%= note.id %>, '<%= j(note.title) %>')" class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600">Delete</button>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Plan Info -->
+    <div class="p-4 border-t border-gray-200 bg-gray-50">
+      <div class="text-xs text-gray-600">
+        <div class="flex justify-between mb-1">
+          <span><%= current_user.admin? ? "Admin" : current_user.plan.to_s.capitalize %> Plan</span>
+          <% if current_user.plan != :pro %>
+            <button onclick="window.location.href='<%= root_path %>#pricing'" class="text-orange-600 hover:text-orange-700 font-medium">Upgrade</button>
+          <% end %>
+        </div>
+        <div class="text-xs text-gray-500">
+          <%= current_user.notebooks.count %> / <%= current_user.admin? ? '∞' : (current_user.plan_limits[:notebooks] == Float::INFINITY ? '∞' : current_user.plan_limits[:notebooks]) %> notebooks •
+          <%= current_user.total_storage_used_mb.round(1) %>MB / <%= current_user.admin? ? '∞' : (current_user.plan_limits[:storage_mb] == Float::INFINITY ? '∞' : current_user.plan_limits[:storage_mb]) %>MB
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Editor Area -->
+  <main class="flex-1 flex flex-col bg-white">
+    <% if @selected_note %>
+      <!-- Editor Header -->
+      <div class="border-b border-gray-200 p-4">
+        <input 
+          type="text" 
+          id="note-title" 
+          value="<%= @selected_note.title %>" 
+          onblur="saveNote()"
+          class="w-full text-2xl font-bold border-none focus:ring-0 focus:outline-none"
+          placeholder="Note title..."
+        />
+        <div class="text-xs text-gray-500 mt-2" id="save-status" data-saved-at="<%= @selected_note.updated_at.iso8601 %>">
+          Last saved: <span id="save-time"></span>
+        </div>
+      </div>
+
+      <!-- Toast UI Editor -->
+      <div class="flex-1 p-6 overflow-y-auto">
+        <div id="editor"></div>
+      </div>
+
+    <% else %>
+      <!-- Empty State -->
+      <div class="flex-1 flex items-center justify-center">
+        <div class="text-center text-gray-400">
+          <svg class="w-24 h-24 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <p class="text-xl font-medium mb-2">No note selected</p>
+          <p class="text-sm">Select a note from the sidebar or create a new one</p>
+        </div>
+      </div>
+    <% end %>
+  </main>
+</div>
+
+<!-- Create Notebook Modal -->
+<div id="create-notebook-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+  <div class="relative p-4 w-full max-w-md max-h-full">
+    <div class="relative bg-white rounded-lg shadow">
+      <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t">
+        <h3 class="text-lg font-semibold text-gray-900">Create New Notebook</h3>
+        <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center" data-modal-hide="create-notebook-modal">
+          <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+          </svg>
+        </button>
+      </div>
+      <div class="p-4 md:p-5">
+        <form onsubmit="submitCreateNotebook(event)">
+          <div class="mb-4">
+            <label for="new-notebook-name" class="block mb-2 text-sm font-medium text-gray-900">Notebook Name</label>
+            <input type="text" id="new-notebook-name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-orange-500 focus:border-orange-500 block w-full p-2.5" placeholder="My Notebook" required>
+          </div>
+          <button type="submit" class="w-full text-white bg-orange-600 hover:bg-orange-700 focus:ring-4 focus:outline-none focus:ring-orange-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
+            Create Notebook
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Rename Modal -->
+<div id="rename-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+  <div class="relative p-4 w-full max-w-md max-h-full">
+    <div class="relative bg-white rounded-lg shadow">
+      <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t">
+        <h3 class="text-lg font-semibold text-gray-900">Rename <span id="rename-type-label"></span></h3>
+        <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center" data-modal-hide="rename-modal">
+          <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+          </svg>
+        </button>
+      </div>
+      <div class="p-4 md:p-5">
+        <form onsubmit="submitRename(event)">
+          <div class="mb-4">
+            <label for="rename-input" class="block mb-2 text-sm font-medium text-gray-900">New Name</label>
+            <input type="text" id="rename-input" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-orange-500 focus:border-orange-500 block w-full p-2.5" required>
+          </div>
+          <button type="submit" class="w-full text-white !bg-orange-600 hover:!bg-orange-700 focus:ring-4 focus:outline-none focus:ring-orange-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Rename</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="delete-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+  <div class="relative p-4 w-full max-w-md max-h-full">
+    <div class="relative bg-white rounded-lg shadow">
+      <button type="button" class="absolute top-3 end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center" data-modal-hide="delete-modal">
+        <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+        </svg>
+      </button>
+      <div class="p-4 md:p-5 text-center">
+        <svg class="mx-auto mb-4 text-gray-400 w-12 h-12" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+        </svg>
+        <h3 class="mb-5 text-lg font-normal text-gray-500">Are you sure you want to delete "<span id="delete-item-name"></span>"?</h3>
+        <p class="mb-5 text-sm text-gray-500" id="delete-warning"></p>
+        <button onclick="confirmDelete()" type="button" class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center">Yes, delete it</button>
+        <button data-modal-hide="delete-modal" type="button" class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-orange-700 focus:z-10 focus:ring-4 focus:ring-gray-100">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Color Picker Modal -->
+<div id="color-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+  <div class="relative p-4 w-full max-w-md max-h-full">
+    <div class="relative bg-white rounded-lg shadow">
+      <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t">
+        <h3 class="text-lg font-semibold text-gray-900">Choose Notebook Color</h3>
+        <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center" data-modal-hide="color-modal">
+          <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+          </svg>
+        </button>
+      </div>
+      <div class="p-4 md:p-5">
+        <div class="grid grid-cols-5 gap-4">
+          <button onclick="changeNotebookColor('black')" class="w-12 h-12 rounded-full bg-gray-800 hover:ring-4 hover:ring-gray-200 transition"></button>
+          <button onclick="changeNotebookColor('red')" class="w-12 h-12 rounded-full bg-red-500 hover:ring-4 hover:ring-red-200 transition"></button>
+          <button onclick="changeNotebookColor('green')" class="w-12 h-12 rounded-full bg-green-500 hover:ring-4 hover:ring-green-200 transition"></button>
+          <button onclick="changeNotebookColor('blue')" class="w-12 h-12 rounded-full bg-blue-500 hover:ring-4 hover:ring-blue-200 transition"></button>
+          <button onclick="changeNotebookColor('yellow')" class="w-12 h-12 rounded-full bg-yellow-500 hover:ring-4 hover:ring-yellow-200 transition"></button>
+          <button onclick="changeNotebookColor('orange')" class="w-12 h-12 rounded-full bg-orange-500 hover:ring-4 hover:ring-orange-200 transition"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Upgrade Modal -->
+<div id="upgrade-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+  <div class="relative p-4 w-full max-w-md max-h-full">
+    <div class="relative bg-white rounded-lg shadow">
+      <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t">
+        <h3 class="text-lg font-semibold text-gray-900">Upgrade Required</h3>
+        <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center" data-modal-hide="upgrade-modal">
+          <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+          </svg>
+        </button>
+      </div>
+      <div class="p-4 md:p-5 text-center">
+        <svg class="mx-auto mb-4 text-orange-400 w-12 h-12" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+        </svg>
+        <h3 class="mb-5 text-lg font-normal text-gray-500" id="upgrade-message">You've reached your plan limit!</h3>
+        <button onclick="window.location.href='<%= root_path %>#pricing'" type="button" class="text-white bg-orange-600 hover:bg-orange-700 focus:ring-4 focus:outline-none focus:ring-orange-300 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center">View Plans</button>
+        <button data-modal-hide="upgrade-modal" type="button" class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-orange-700 focus:z-10 focus:ring-4 focus:ring-gray-100">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentEditType = null;
+  let currentEditId = null;
+  let autoSaveInterval = null;
+  let editor = null;
+
+  document.addEventListener('DOMContentLoaded', function() {
+  const editorElement = document.getElementById('editor');
+  if (editorElement) {
+    // Initialize Toast UI Editor
+    editor = new toastui.Editor({
+      el: editorElement,
+      height: '100%',
+      initialEditType: 'wysiwyg',
+      previewStyle: 'vertical',
+      initialValue: <%= raw @selected_note&.content.to_json || '""' %>,
+      usageStatistics: false
+    });
+    
+    // Function to resize editor
+    function resizeEditor() {
+      if (editor) {
+        const mainArea = document.querySelector('main.flex-1');
+        const header = document.querySelector('main.flex-1 > div:first-child'); // Title header
+        const headerHeight = header ? header.offsetHeight : 0;
+        const availableHeight = mainArea.offsetHeight - headerHeight - 48; // 48px for padding
+        editor.setHeight(`${availableHeight}px`);
+      }
+    }
+    
+    // Auto-save every 60 seconds
+    autoSaveInterval = setInterval(saveNote, 60000);
+    
+    // Save on blur
+    editor.on('blur', function() {
+      saveNote();
+    });
+    
+    // Resize on window resize
+    window.addEventListener('resize', resizeEditor);
+    
+    // Initial resize after a short delay to ensure layout is complete
+    setTimeout(resizeEditor, 200);
+      }
+    });
+    const saveStatus = document.getElementById('save-status');
+    if (saveStatus) {
+      const savedAt = saveStatus.dataset.savedAt;
+      if (savedAt) {
+        const savedTime = new Date(savedAt);
+        const timeString = savedTime.toLocaleTimeString('en-US', { 
+          hour: 'numeric', 
+          minute: '2-digit',
+          hour12: true 
+        });
+        document.getElementById('save-time').textContent = timeString;
+      }
+    }
+
+  document.addEventListener('turbo:before-visit', function() {
+    if (autoSaveInterval) {
+      clearInterval(autoSaveInterval);
+    }
+  });
+
+  function toggleNotebook(notebookId) {
+    const notesDiv = document.getElementById(`notes-${notebookId}`);
+    if (notesDiv.style.display === 'none') {
+      notesDiv.style.display = 'block';
+    } else {
+      notesDiv.style.display = 'none';
+    }
+  }
+
+  async function submitCreateNotebook(event) {
+    event.preventDefault();
+    const name = document.getElementById('new-notebook-name').value;
+
+    const response = await fetch('/notebooks', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+      },
+      body: JSON.stringify({ notebook: { name } })
+    });
+
+    const result = await response.json();
+    
+    if (response.ok) {
+      window.location.reload();
+    } else {
+      if (result.error && result.error.includes('limit')) {
+        document.getElementById('upgrade-message').textContent = result.error;
+        const modal = FlowbiteInstances.getInstance('Modal', 'create-notebook-modal');
+        modal.hide();
+        const upgradeModal = new Modal(document.getElementById('upgrade-modal'));
+        upgradeModal.show();
+      } else {
+        alert(result.error || 'Failed to create notebook');
+      }
+    }
+  }
+
+  async function createNote(notebookId) {
+    const response = await fetch(`/notebooks/${notebookId}/notes`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+      },
+      body: JSON.stringify({ note: { title: 'Untitled Note', content: '' } })
+    });
+
+    const result = await response.json();
+    
+    if (response.ok) {
+      window.location.href = `/app?note_id=${result.id}`;
+    } else {
+      if (result.error && result.error.includes('limit')) {
+        document.getElementById('upgrade-message').textContent = result.error;
+        const modal = new Modal(document.getElementById('upgrade-modal'));
+        modal.show();
+      } else {
+        alert(result.error || 'Failed to create note');
+      }
+    }
+  }
+
+  function loadNote(noteId) {
+    window.location.href = `/app?note_id=${noteId}`;
+  }
+
+  async function saveNote() {
+    const noteId = <%= @selected_note&.id || 'null' %>;
+    if (!noteId || !editor) return;
+
+    const title = document.getElementById('note-title').value;
+    const content = editor.getMarkdown();
+
+    const response = await fetch(`/notes/${noteId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+      },
+      body: JSON.stringify({ note: { title, content } })
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      const savedTime = new Date(result.saved_at);
+      const timeString = savedTime.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit',
+        hour12: true 
+      });
+      document.getElementById('save-status').textContent = `Last saved: ${timeString}`;
+      
+      // Update the note title in the sidebar
+      const noteElement = document.querySelector(`[data-note-id="${noteId}"] button`);
+      if (noteElement && result.title) {
+        noteElement.textContent = result.title;
+      }
+      
+      // No need to update preview - WYSIWYG shows formatted content already
+    } else {
+      if (result.error && result.error.includes('storage')) {
+        document.getElementById('upgrade-message').textContent = result.error;
+        const modal = new Modal(document.getElementById('upgrade-modal'));
+        modal.show();
+      }
+    }
+  }
+
+  function openRenameModal(type, id, currentName) {
+    currentEditType = type;
+    currentEditId = id;
+    document.getElementById('rename-type-label').textContent = type.charAt(0).toUpperCase() + type.slice(1);
+    document.getElementById('rename-input').value = currentName;
+    
+    const modal = new Modal(document.getElementById('rename-modal'));
+    modal.show();
+  }
+
+  async function submitRename(event) {
+    event.preventDefault();
+    const newName = document.getElementById('rename-input').value;
+    const url = currentEditType === 'notebook' ? `/notebooks/${currentEditId}` : `/notes/${currentEditId}`;
+    const key = currentEditType === 'notebook' ? 'notebook' : 'note';
+    const field = currentEditType === 'notebook' ? 'name' : 'title';
+
+    const response = await fetch(url, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+      },
+      body: JSON.stringify({ [key]: { [field]: newName } })
+    });
+
+    if (response.ok) {
+      window.location.reload();
+    }
+  }
+
+  function openDeleteModal(type, id, name) {
+    currentEditType = type;
+    currentEditId = id;
+    document.getElementById('delete-item-name').textContent = name;
+    
+    if (type === 'notebook') {
+      document.getElementById('delete-warning').textContent = 'This will also delete all notes in this notebook. This action cannot be undone.';
+    } else {
+      document.getElementById('delete-warning').textContent = 'This action cannot be undone.';
+    }
+    
+    const modal = new Modal(document.getElementById('delete-modal'));
+    modal.show();
+  }
+
+  async function confirmDelete() {
+    const url = currentEditType === 'notebook' ? `/notebooks/${currentEditId}` : `/notes/${currentEditId}`;
+
+    const response = await fetch(url, {
+      method: 'DELETE',
+      headers: {
+        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+      }
+    });
+
+    if (response.ok) {
+      if (currentEditType === 'note' && currentEditId === <%= @selected_note&.id || 'null' %>) {
+        window.location.href = '/app';
+      } else {
+        window.location.reload();
+      }
+    }
+  }
+
+  function openColorModal(notebookId) {
+    currentEditId = notebookId;
+    const modal = new Modal(document.getElementById('color-modal'));
+    modal.show();
+  }
+
+  async function changeNotebookColor(color) {
+    const response = await fetch(`/notebooks/${currentEditId}/update_color`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+      },
+      body: JSON.stringify({ color })
+    });
+
+    if (response.ok) {
+      window.location.reload();
+    }
+  }
+</script>

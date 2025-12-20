@@ -71,7 +71,7 @@ RSpec.configure do |config|
   # config.filter_gems_from_backtrace("gem name")
   # Configure FactoryBot
   RSpec.configure do |config|
-    config.include FactoryBot::SyntaxMethods
+    config.include FactoryBot::Syntax::Methods
   end
 
   # Configure Shoulda Matchers
@@ -82,3 +82,4 @@ RSpec.configure do |config|
     end
   end
 end
+

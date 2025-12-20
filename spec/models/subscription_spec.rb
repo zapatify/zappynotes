@@ -12,11 +12,11 @@ RSpec.describe Subscription, type: :model do
 
   describe 'enums' do
     it 'defines plan enum' do
-      expect(Subscription.plans.keys).to match_array(['free', 'plus', 'pro'])
+      expect(Subscription.plans.keys).to match_array([ 'free', 'plus', 'pro' ])
     end
 
     it 'defines status enum' do
-      expect(Subscription.statuses.keys).to match_array(['active', 'canceled', 'past_due', 'incomplete', 'trialing'])
+      expect(Subscription.statuses.keys).to match_array([ 'active', 'canceled', 'past_due', 'incomplete', 'trialing' ])
     end
   end
 

@@ -16,12 +16,12 @@ RSpec.describe Notebook, type: :model do
     it 'orders notebooks by position' do
       user = create(:user)
       user.notebooks.destroy_all # Clear default notebooks
-      
+
       notebook1 = create(:notebook, user: user, position: 2)
       notebook2 = create(:notebook, user: user, position: 0)
       notebook3 = create(:notebook, user: user, position: 1)
 
-      expect(user.notebooks.reload.to_a).to eq([notebook2, notebook3, notebook1])
+      expect(user.notebooks.reload.to_a).to eq([ notebook2, notebook3, notebook1 ])
     end
   end
 
@@ -61,7 +61,7 @@ RSpec.describe Notebook, type: :model do
       # Bypass validation to test fallback
       notebook.color = 'invalid'
       notebook.save(validate: false)
-      
+
       expect(notebook.hex_color).to eq('#3b82f6')
     end
   end
@@ -70,7 +70,7 @@ RSpec.describe Notebook, type: :model do
     it 'deletes associated notes when notebook is deleted' do
       notebook = create(:notebook, :with_notes)
       note_ids = notebook.notes.pluck(:id)
-      
+
       expect { notebook.destroy }.to change { Note.count }.by(-3)
       expect(Note.where(id: note_ids)).to be_empty
     end

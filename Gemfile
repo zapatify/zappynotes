@@ -40,6 +40,8 @@ end
 
 group :development do
   gem "web-console"
+  # Security vulnerability scanner
+  gem "bundler-audit", require: false
 end
 
 group :test do

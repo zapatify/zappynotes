@@ -1,10 +1,10 @@
 class NotebooksController < ApplicationController
   before_action :require_authentication
-  before_action :set_notebook, only: [:update, :destroy, :update_color]
+  before_action :set_notebook, only: [ :update, :destroy, :update_color ]
 
   def create
     unless current_user.can_create_notebook?
-      render json: { 
+      render json: {
         error: "You've reached your notebook limit. Please upgrade your plan to create more notebooks.",
         upgrade_needed: true
       }, status: :unprocessable_entity
@@ -13,10 +13,10 @@ class NotebooksController < ApplicationController
 
     @notebook = current_user.notebooks.build(notebook_params)
     @notebook.position = current_user.notebooks.count
-    @notebook.color ||= 'black'
+    @notebook.color ||= "black"
 
     if @notebook.save
-      render json: { 
+      render json: {
         id: @notebook.id,
         name: @notebook.name,
         color: @notebook.color
@@ -28,7 +28,7 @@ class NotebooksController < ApplicationController
 
   def update
     if @notebook.update(notebook_params)
-      render json: { 
+      render json: {
         id: @notebook.id,
         name: @notebook.name
       }

@@ -4,31 +4,31 @@ class WebhooksController < ApplicationController
 
   def stripe
     payload = request.body.read
-    sig_header = request.env['HTTP_STRIPE_SIGNATURE']
-    endpoint_secret = ENV['STRIPE_WEBHOOK_SECRET']
+    sig_header = request.env["HTTP_STRIPE_SIGNATURE"]
+    endpoint_secret = ENV["STRIPE_WEBHOOK_SECRET"]
 
     begin
       event = Stripe::Webhook.construct_event(payload, sig_header, endpoint_secret)
     rescue JSON::ParserError => e
-      render json: { error: 'Invalid payload' }, status: :bad_request
+      render json: { error: "Invalid payload" }, status: :bad_request
       return
     rescue Stripe::SignatureVerificationError => e
-      render json: { error: 'Invalid signature' }, status: :bad_request
+      render json: { error: "Invalid signature" }, status: :bad_request
       return
     end
 
     case event.type
-    when 'checkout.session.completed'
+    when "checkout.session.completed"
       handle_checkout_completed(event.data.object)
-    when 'customer.subscription.updated'
+    when "customer.subscription.updated"
       handle_subscription_updated(event.data.object)
-    when 'customer.subscription.deleted'
+    when "customer.subscription.deleted"
       handle_subscription_deleted(event.data.object)
-    when 'invoice.payment_failed'
+    when "invoice.payment_failed"
       handle_payment_failed(event.data.object)
     end
 
-    render json: { status: 'success' }
+    render json: { status: "success" }
   end
 
   private
@@ -65,24 +65,24 @@ class WebhooksController < ApplicationController
     sub = Subscription.find_by(stripe_subscription_id: subscription.id)
     return unless sub
 
-    sub.update(status: 'canceled', plan: 'free')
+    sub.update(status: "canceled", plan: "free")
   end
 
   def handle_payment_failed(invoice)
     sub = Subscription.find_by(stripe_subscription_id: invoice.subscription)
     return unless sub
 
-    sub.update(status: 'past_due')
+    sub.update(status: "past_due")
   end
 
   def determine_plan(price_id)
     case price_id
-    when ENV['STRIPE_PLUS_PRICE_ID']
-      'plus'
-    when ENV['STRIPE_PRO_PRICE_ID']
-      'pro'
+    when ENV["STRIPE_PLUS_PRICE_ID"]
+      "plus"
+    when ENV["STRIPE_PRO_PRICE_ID"]
+      "pro"
     else
-      'free'
+      "free"
     end
   end
 end

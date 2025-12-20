@@ -7,14 +7,14 @@ class SubscriptionsController < ApplicationController
 
   def create
     price_id = params[:price_id]
-    
+
     session = Stripe::Checkout::Session.create(
       customer_email: current_user.email_address,
-      mode: 'subscription',
-      line_items: [{
+      mode: "subscription",
+      line_items: [ {
         price: price_id,
         quantity: 1
-      }],
+      } ],
       success_url: checkout_success_subscription_url,
       cancel_url: root_url
     )

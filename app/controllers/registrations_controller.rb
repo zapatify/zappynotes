@@ -1,5 +1,5 @@
 class RegistrationsController < ApplicationController
-  skip_before_action :require_authentication, only: [:new, :create]
+  skip_before_action :require_authentication, only: [ :new, :create ]
 
   def new
     # Show sign up form
@@ -7,7 +7,7 @@ class RegistrationsController < ApplicationController
 
   def create
     @user = User.new(user_params)
-    
+
     if @user.save
       start_new_session_for(@user)
       redirect_to app_root_path, notice: "Welcome to ZappyNotes!"

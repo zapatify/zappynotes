@@ -3,7 +3,7 @@ class AppController < ApplicationController
 
   def index
     @notebooks = current_user.notebooks.includes(:notes)
-    
+
     # Find the note to display (from params or last edited)
     if params[:note_id]
       @selected_note = current_user.notes.find_by(id: params[:note_id])

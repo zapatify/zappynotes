@@ -8,14 +8,14 @@ Rails.application.config.to_prepare do
       # Get current session
       session_id = cookies.signed[:session_id]
       session_record = session_id ? Session.find_by(id: session_id) : nil
-      
+
       if session_record
         Current.session = session_record
         user = session_record.user
-        
+
         if user&.admin?
           # User is authenticated and is admin - allow access
-          return
+          nil
         else
           # User is authenticated but not admin
           redirect_to "/", alert: "Admin access required"

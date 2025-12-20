@@ -14,7 +14,7 @@ gem "jbuilder"
 gem "bcrypt", "~> 3.1.7"
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 gem "bootsnap", require: false
-gem 'motor-admin'
+gem "motor-admin"
 gem "appsignal"
 
 # Stripe for payment processing
@@ -25,13 +25,13 @@ gem "kramdown", "~> 2.4"
 gem "kramdown-parser-gfm", "~> 1.1"
 
 # Environment variables
-gem "dotenv-rails", groups: [:development, :test]
+gem "dotenv-rails", groups: [ :development, :test ]
 
 group :development, :test do
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
   gem "brakeman", require: false
   gem "rubocop-rails-omakase", require: false
-  
+
   # RSpec for testing
   gem "rspec-rails", "~> 7.0"
   gem "factory_bot_rails", "~> 6.4"

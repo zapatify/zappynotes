@@ -1,6 +1,6 @@
 class NotesController < ApplicationController
   before_action :require_authentication
-  before_action :set_note, only: [:show, :update, :destroy]
+  before_action :set_note, only: [ :show, :update, :destroy ]
 
   def show
     render json: {
@@ -14,9 +14,9 @@ class NotesController < ApplicationController
 
   def create
     @notebook = current_user.notebooks.find(params[:notebook_id])
-    
+
     unless current_user.can_create_note?(@notebook)
-      render json: { 
+      render json: {
         error: "You've reached your note limit for this notebook. Please upgrade your plan.",
         upgrade_needed: true
       }, status: :unprocessable_entity
@@ -28,7 +28,7 @@ class NotesController < ApplicationController
     @note.content ||= "Start writing..."
 
     if @note.save
-      render json: { 
+      render json: {
         id: @note.id,
         title: @note.title,
         content: @note.content,
@@ -41,9 +41,9 @@ class NotesController < ApplicationController
 
   def update
     additional_bytes = note_params[:content] ? note_params[:content].bytesize - @note.content_size : 0
-    
+
     if additional_bytes > 0 && !current_user.can_add_content?(additional_bytes)
-      render json: { 
+      render json: {
         error: "You've reached your storage limit. Please upgrade your plan.",
         upgrade_needed: true
       }, status: :unprocessable_entity
@@ -51,7 +51,7 @@ class NotesController < ApplicationController
     end
 
     if @note.update(note_params)
-      render json: { 
+      render json: {
         id: @note.id,
         title: @note.title,
         content: @note.content,

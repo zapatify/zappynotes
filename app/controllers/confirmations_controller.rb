@@ -1,9 +1,9 @@
 class ConfirmationsController < ApplicationController
   allow_unauthenticated_access
-  
+
   def show
     user = User.find_by(confirmation_token: params[:token])
-    
+
     if user.nil?
       redirect_to sign_in_path, alert: "Invalid confirmation link."
     elsif user.confirmed?
@@ -15,10 +15,10 @@ class ConfirmationsController < ApplicationController
       redirect_to sign_in_path, notice: "Email confirmed! You can now sign in."
     end
   end
-  
+
   def resend
     user = User.find_by(email_address: params[:email_address])
-    
+
     if user && !user.confirmed?
       user.send_confirmation_email
       redirect_to sign_in_path, notice: "Confirmation email resent. Please check your inbox."

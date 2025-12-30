@@ -7,7 +7,7 @@ class RegistrationsController < ApplicationController
 
   def create
     @user = User.new(user_params)
-    
+
     if @user.save
       @user.send_confirmation_email
       redirect_to sign_in_path, notice: "Please check your email to confirm your account."

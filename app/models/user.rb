@@ -152,6 +152,5 @@ class User < ApplicationRecord
   def generate_confirmation_token
     self.confirmation_token = SecureRandom.urlsafe_base64
   end
-  
 end
 test = 1

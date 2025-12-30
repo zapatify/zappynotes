@@ -11,7 +11,7 @@ class SessionsController < ApplicationController
         redirect_to sign_in_path, alert: "Please confirm your email address first. Check your inbox for the confirmation link."
         return
       end
-      
+
       start_new_session_for user
       redirect_to app_root_path
     else

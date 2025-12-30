@@ -16,6 +16,7 @@ gem "tzinfo-data", platforms: %i[ windows jruby ]
 gem "bootsnap", require: false
 gem "motor-admin"
 gem "appsignal"
+gem "rack-attack"
 
 # Stripe for payment processing
 gem "stripe", "~> 12.0"
@@ -42,6 +43,8 @@ group :development do
   gem "web-console"
   # Security vulnerability scanner
   gem "bundler-audit", require: false
+  # Preview emails in browser
+  gem "letter_opener"
 end
 
 group :test do

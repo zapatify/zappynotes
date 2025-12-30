@@ -7,10 +7,10 @@ class RegistrationsController < ApplicationController
 
   def create
     @user = User.new(user_params)
-
+    
     if @user.save
-      start_new_session_for(@user)
-      redirect_to app_root_path, notice: "Welcome to ZappyNotes!"
+      @user.send_confirmation_email
+      redirect_to sign_in_path, notice: "Please check your email to confirm your account."
     else
       flash.now[:alert] = @user.errors.full_messages.join(", ")
       render :new, status: :unprocessable_entity

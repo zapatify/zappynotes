@@ -51,6 +51,26 @@ class User < ApplicationRecord
     total_storage_used_mb <= plan_limits[:storage_mb]
   end
 
+  before_create :generate_confirmation_token
+
+  def confirmed?
+    confirmed_at.present?
+  end
+
+  def confirm!
+    update(confirmed_at: Time.current, confirmation_token: nil)
+  end
+
+  def send_confirmation_email
+    UserMailer.confirmation_email(self).deliver_later
+    update(confirmation_sent_at: Time.current)
+  end
+
+  def confirmation_token_expired?
+    return false if confirmation_sent_at.nil?
+    confirmation_sent_at < 24.hours.ago
+  end
+
   private
 
   def create_default_notebooks
@@ -128,5 +148,10 @@ class User < ApplicationRecord
       Happy note-taking! ✨
     MARKDOWN
   end
+
+  def generate_confirmation_token
+    self.confirmation_token = SecureRandom.urlsafe_base64
+  end
+  
 end
 test = 1

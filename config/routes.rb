@@ -40,4 +40,9 @@ Rails.application.routes.draw do
 
   # Stripe webhooks
   post "webhooks/stripe", to: "webhooks#stripe"
+
+  # Email confirmation
+  get "confirm_email/:token", to: "confirmations#show", as: :confirm_email
+  post "resend_confirmation", to: "confirmations#resend"
+  
 end

@@ -1,6 +1,6 @@
 # ZappyNotes ⚡📝
 
-A modern, lightning-fast note-taking application built with Rails 8. ZappyNotes provides a clean, intuitive interface for organizing your thoughts with Markdown support, auto-save, and tiered subscription plans.
+A modern, lightweight, lightning-fast note-taking application built with Rails 8. ZappyNotes provides a clean, intuitive interface for organizing your thoughts with Markdown support, auto-save, and tiered subscription plans.
 
 ![ZappyNotes Logo](app/assets/images/zappynoteslogo.png)
 

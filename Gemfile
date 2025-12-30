@@ -19,7 +19,7 @@ gem "appsignal"
 gem "rack-attack"
 
 # Stripe for payment processing
-gem "stripe", "~> 12.0"
+gem "stripe", "~> 18.1"
 
 # Markdown processing
 gem "kramdown", "~> 2.4"
